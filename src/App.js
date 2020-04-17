@@ -3,7 +3,8 @@ import logo from './logo.svg';
 import './App.css';
 import Button from '@material-ui/core/Button';
 import {handleClick, handleC} from './handleClick';
-import ble from './ble';
+import {bleScan, bleWrite} from './ble';
+import puck from './puck'
 
 
 function App() {
@@ -18,16 +19,18 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-        <h1>FlashBlaster</h1>
+        <h2>FlashBlaster</h2>
         </a>
     
-        <Button variant="contained" color="primary" onClick={handleClick}>
-          Log Test 
-        </Button>
-
-        <Button variant="contained" color="secondary" onClick={ble}>
+        <Button variant="contained" color="secondary" onClick={bleScan}>
           BLE Scan
         </Button>
+
+        <Button variant="contained" color="primary" onClick={bleWrite}>
+          Write Data
+        </Button>
+
+
         
 
       </header>
