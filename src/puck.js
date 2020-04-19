@@ -181,9 +181,9 @@ Or more advanced usage with control of the connection
           txItem.data = txItem.data.substr(CHUNKSIZE);
         }
         connection.txInProgress = true;
-        log(2, "Sending "+ JSON.stringify(chunk));
+        console.log(2, "Sending "+ JSON.stringify(chunk));
         txCharacteristic.writeValue(str2ab(chunk)).then(function() {
-          log(3, "Sent");
+          // console.log(3, "Sent");
           if (!txItem.data) {
             txDataQueue.shift(); // remove this element
             if (txItem.callback)
@@ -192,7 +192,7 @@ Or more advanced usage with control of the connection
           connection.txInProgress = false;
           writeChunk();
         }).catch(function(error) {
-         log(1, 'SEND ERROR: ' + error);
+         console.log(1, 'SEND ERROR: ' + error);
          txDataQueue = [];
          connection.close();
         });
@@ -210,26 +210,26 @@ Or more advanced usage with control of the connection
           // { namePrefix: 'Espruino' },
           { services: [ NORDIC_SERVICE ] }
         ], optionalServices: [ NORDIC_SERVICE ]}).then(function(device) {
-      log(1, 'Device Name:       ' + device.name);
-      log(1, 'Device ID:         ' + device.id);
+      console.log(1, 'Device Name:       ' + device.name);
+      console.log(1, 'Device ID:         ' + device.id);
       // Was deprecated: Should use getPrimaryServices for this in future
       //log('BT>  Device UUIDs:      ' + device.uuids.join('\n' + ' '.repeat(21)));
       device.addEventListener('gattserverdisconnected', function() {
-        log(1, "Disconnected (gattserverdisconnected)");
+        console.log(1, "Disconnected (gattserverdisconnected)");
         connection.close();
       });
       return device.gatt.connect();
     }).then(function(server) {
-      log(1, "Connected");
+      console.log(1, "Connected");
       btServer = server;
       return server.getPrimaryService(NORDIC_SERVICE);
     }).then(function(service) {
-      log(2, "Got service");
+      console.log(2, "Got service");
       btService = service;
       return btService.getCharacteristic(NORDIC_RX);
     }).then(function (characteristic) {
       rxCharacteristic = characteristic;
-      log(2, "RX characteristic:"+JSON.stringify(rxCharacteristic));
+      console.log(2, "RX characteristic:"+JSON.stringify(rxCharacteristic));
       rxCharacteristic.addEventListener('characteristicvaluechanged', function(event) {
         var dataview = event.target.value;
         var data = ab2str(dataview.buffer);
@@ -238,10 +238,10 @@ Or more advanced usage with control of the connection
             var ch = data.charCodeAt(i);
             var remove = true;
             if (ch==19) {// XOFF
-              log(2,"XOFF received => pause upload");
+              console.log(2,"XOFF received => pause upload");
               flowControlXOFF = true;
             } else if (ch==17) {// XON
-              log(2,"XON received => resume upload");
+              console.log(2,"XON received => resume upload");
               flowControlXOFF = false;
             } else
               remove = false;
@@ -251,7 +251,7 @@ Or more advanced usage with control of the connection
             }
           }
         }
-        log(3, "Received "+JSON.stringify(data));
+        console.log(3, "Received "+JSON.stringify(data));
         connection.emit('data', data);
       });
       return rxCharacteristic.startNotifications();
@@ -259,7 +259,7 @@ Or more advanced usage with control of the connection
       return btService.getCharacteristic(NORDIC_TX);
     }).then(function (characteristic) {
       txCharacteristic = characteristic;
-      log(2, "TX characteristic:"+JSON.stringify(txCharacteristic));
+      console.log(2, "TX characteristic:"+JSON.stringify(txCharacteristic));
     }).then(function() {
       connection.txInProgress = false;
       connection.isOpen = true;
@@ -271,7 +271,7 @@ Or more advanced usage with control of the connection
       // if we had any writes queued, do them now
       connection.write();
     }).catch(function(error) {
-      log(1, 'ERROR: ' + error);
+      console.log(1, 'ERROR: ' + error);
       connection.close();
     });
     return connection;

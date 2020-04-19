@@ -2,26 +2,27 @@ import React from 'react';
 import puck from './puck';
 
 
-function callback()
+
+function callbackConn()
 {
   //should this transition to new menu? where project/chip/file is selected?
   console.log('connection callback executed');
 }
 
-function callback1()
+function callbackTx()
 {
   console.log('data sent');
 }
 
 async function bleScan()
 { 
-  puck.connect(callback);
+  puck.connect(callbackConn);
 }
 
 async function bleWrite()
 {
-  puck.write("1", callback1);
+  puck.write("12345", callbackTx);
 }
 
-export {bleScan, bleWrite}; 
+export {bleScan, bleWrite, callbackTx}; 
 

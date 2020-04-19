@@ -17,7 +17,7 @@ const styles = theme => ({
   },
 
   cssLabel: {
-    color : 'green'
+    color : ''
   },
 
   cssOutlinedInput: {
@@ -37,7 +37,7 @@ const styles = theme => ({
 
 class ChipField extends React.Component {
     state = {
-      name: ' ',
+      name: '',
     };
   
     handleChange = name => event => {
