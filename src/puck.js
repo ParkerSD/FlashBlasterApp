@@ -95,7 +95,7 @@ Or more advanced usage with control of the connection
   var NORDIC_SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
   var NORDIC_TX = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
   var NORDIC_RX = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
-  var CHUNKSIZE = 16;
+  var CHUNKSIZE = 512; //Max 512, can this value safely exceed max MTU of 247? 
 
   function log(level, s) {
     if (puck.log) puck.log(level, s);
@@ -183,7 +183,7 @@ Or more advanced usage with control of the connection
         connection.txInProgress = true;
         console.log(2, "Sending "+ JSON.stringify(chunk));
         txCharacteristic.writeValue(str2ab(chunk)).then(function() {
-          // console.log(3, "Sent");
+          // console.log(3, "Sent"); 
           if (!txItem.data) {
             txDataQueue.shift(); // remove this element
             if (txItem.callback)

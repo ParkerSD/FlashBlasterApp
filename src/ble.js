@@ -6,12 +6,12 @@ import puck from './puck';
 function callbackConn()
 {
   //should this transition to new menu? where project/chip/file is selected?
-  console.log('connection callback executed');
+  console.log('Connection Established');
 }
 
 function callbackTx()
 {
-  console.log('data sent');
+  console.log('Data Transfer Complete');
 }
 
 async function bleScan()
@@ -20,8 +20,8 @@ async function bleScan()
 }
 
 async function bleWrite()
-{
-  puck.write("12345", callbackTx);
+{ 
+  puck.write("12345", callbackTx); //test write
 }
 
 export {bleScan, bleWrite, callbackTx}; 
