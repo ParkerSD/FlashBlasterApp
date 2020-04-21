@@ -13,7 +13,15 @@ import React, { Component } from 'react';
 import puck from './puck';
 
 
+var CMD = 0xCC;
+var DAT = 0xCD; 
 
+var addProjectCMD = 0x10;
+var addChipCMD = 0x20;
+var addFileCMD = 0x30;
+var delProjectCMD = 0x40;
+var delChipCMD = 0x50;
+var delfileCMD = 0x60; 
 
 class App extends Component {
 
@@ -42,14 +50,19 @@ class App extends Component {
   fileUploadHandler = () => {
     if(this.state.selectedFile !== null)
     {
+
       console.log(this.state.selectedFile); //stat object has other properties ex: this.state.selectedFile.name
       var file = this.state.selectedFile;
-      var project = this.state.project;
-      var chip = this.state.chip;
+      var fileSize = this.state.selectedFile.size; 
+      var fileSizeDigits = Math.floor(Math.log10(fileSize)) + 1; //decimal digits in file size value
+      var fileAdd = `${CMD}${addFileCMD}${DAT}${this.state.selectedFile.name.length}${this.state.selectedFile.name}${fileSizeDigits}${fileSize}`;
+      var project = `${CMD}${addProjectCMD}${DAT}${this.state.project.length}${this.state.project}`;
+      var chip = `${CMD}${addChipCMD}${DAT}${this.state.chip.length}${this.state.chip}`;
+      
 
       var reader = new FileReader();
       reader.onload = function () {
-        puck.write(project.concat(chip, reader.result), callbackTx); // concatenate project, chip, and file
+        puck.write(project.concat(chip, fileAdd, reader.result), callbackTx); // concatenate project, chip, and file
       }
       reader.readAsBinaryString(file); //now available in the result attribute
     }
