@@ -95,7 +95,7 @@ Or more advanced usage with control of the connection
   var NORDIC_SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
   var NORDIC_TX = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
   var NORDIC_RX = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
-  var CHUNKSIZE = 512; //Max 512, can this value safely exceed max MTU of 247? 
+  var CHUNKSIZE = 244; //Max 512, but this value safely exceed max MTU of 247-3? 
 
   function log(level, s) {
     if (puck.log) puck.log(level, s);
