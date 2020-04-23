@@ -13,15 +13,14 @@ import React, { Component } from 'react';
 import puck from './puck';
 
 
-var CMD = 0xCC;
-var DAT = 0xCD; 
+var startByte = "CC"; 
 
-var addProjectCMD = 0x10;
-var addChipCMD = 0x20;
-var addFileCMD = 0x30;
-var delProjectCMD = 0x40;
-var delChipCMD = 0x50;
-var delfileCMD = 0x60; 
+var addProjectCMD = "10";
+var addChipCMD = "20";
+var addFileCMD = "30";
+var delProjectCMD = "40";
+var delChipCMD = "50";
+var delfileCMD = "60"; 
 
 class App extends Component {
 
@@ -53,16 +52,26 @@ class App extends Component {
 
       console.log(this.state.selectedFile); //stat object has other properties ex: this.state.selectedFile.name
       var file = this.state.selectedFile;
+      
       var fileSize = this.state.selectedFile.size; 
+      var fileNameSize = this.state.selectedFile.name.length; 
+      var projectNameSize = this.state.project.length;
+      var chipNameSize = this.state.chip.length;
+
       var fileSizeDigits = Math.floor(Math.log10(fileSize)) + 1; //decimal digits in file size value
-      var fileAdd = `${CMD}${addFileCMD}${DAT}${this.state.selectedFile.name.length}${this.state.selectedFile.name}${fileSizeDigits}${fileSize}`;
-      var project = `${CMD}${addProjectCMD}${DAT}${this.state.project.length}${this.state.project}`;
-      var chip = `${CMD}${addChipCMD}${DAT}${this.state.chip.length}${this.state.chip}`;
+      var fileLengthDigits = Math.floor(Math.log10(fileNameSize)) + 1;
+      var projectLengthDigits = Math.floor(Math.log10(projectNameSize)) + 1;
+      var chipLengthDigits = Math.floor(Math.log10(chipNameSize)) + 1;
+
+      var fileAdd = `${startByte}${addFileCMD}${fileLengthDigits}${this.state.selectedFile.name.length}${this.state.selectedFile.name}`;
+      var fileData = `${fileSizeDigits}${fileSize}`;
+      var project = `${projectLengthDigits}${this.state.project.length}${this.state.project}`;
+      var chip = `${chipLengthDigits}${this.state.chip.length}${this.state.chip}`;
       
 
       var reader = new FileReader();
       reader.onload = function () {
-        puck.write(project.concat(chip, fileAdd, reader.result), callbackTx); // concatenate project, chip, and file
+        puck.write(fileAdd.concat(chip, project, fileData, reader.result), callbackTx); // concatenate project, chip, and file
       }
       reader.readAsBinaryString(file); //now available in the result attribute
     }
