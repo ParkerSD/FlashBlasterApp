@@ -11,6 +11,13 @@ import ProjectField from './ProjectField.js';
 import ChipField from './ChipField.js';
 import React, { Component } from 'react';
 import puck from './puck';
+import Input from '@material-ui/core/Input';
+import Select from '@material-ui/core/Select';
+import { makeStyles } from '@material-ui/core/styles';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import FormControl from '@material-ui/core/FormControl';
 
 
 var startByte = "CC"; 
@@ -22,12 +29,22 @@ var delProjectCMD = "40";
 var delChipCMD = "50";
 var delfileCMD = "60"; 
 
+
+
 class App extends Component {
 
   state = {
     selectedFile: null,
     project: null,
-    chip: null
+    chip: null,
+    file: null,
+    cmd: null
+
+  }
+
+  cmdSelectedHandler = (event) =>{
+    this.state.cmd = event.target.value; 
+    console.log("Command Selected:", this.state.cmd);
   }
 
   fileSelectedHandler = (event) =>{
@@ -44,6 +61,11 @@ class App extends Component {
   chipNameHandler = (event) => {
     this.state.chip = event.target.value;
     console.log("Chip's Name:", this.state.chip);
+  }
+
+  fileNameHandler = (event) => {
+    this.state.chip = event.target.value;
+    console.log("File's Name:", this.state.file);
   }
 
   fileUploadHandler = () => {
@@ -71,7 +93,8 @@ class App extends Component {
 
       var reader = new FileReader();
       reader.onload = function () {
-        puck.write(fileAdd.concat(chip, project, fileData, reader.result), callbackTx); // concatenate project, chip, and file
+        puck.write(reader.result, callbackTx);
+        puck.write(fileAdd.concat(chip, project, fileData), callbackTx); // concatenate project, chip, and file
       }
       reader.readAsBinaryString(file); //now available in the result attribute
     }
@@ -81,18 +104,13 @@ class App extends Component {
     return (
       <div className="App">
 
-        <input type="file" onChange={this.fileSelectedHandler}/>
-        <Button variant="contained" color="secondary" onClick={this.fileUploadHandler}> 
-          Transfer File 
-        </Button>
-
         <header className="App-header">
 
           <h2>FlashBlaster</h2>
-
+        
           <p>
-            <Button variant="contained" color="primary" onClick={bleScan}>
-              BLE Scan
+            <Button variant="outlined" color="secondary" onClick={this.fileUploadHandler}> 
+              Update Device 
             </Button>
  
             {/* <Button variant="contained" color="primary" onClick={bleWrite}>
@@ -100,20 +118,56 @@ class App extends Component {
             </Button> */}
           </p>
         
-            <Box border={5} color="darkblue" bgcolor="white"  p={10}>
+          <Box border={5} color="black" bgcolor="white"  p={10}>
+          {/* <FormControl variant="outlined"> */}
+            <InputLabel>Select Command</InputLabel>
+              <Select
+                onChange={this.cmdSelectedHandler}
+                >
+                <MenuItem value="">
+                <em>None</em>
+                </MenuItem>
+              
+                <MenuItem value={"30"}>Add File</MenuItem>
+                <MenuItem value={"20"}>Add Chip</MenuItem>
+                <MenuItem value={"10"}>Add Project</MenuItem>
+                <MenuItem value={"00"}>Add All</MenuItem>
+                <MenuItem value={"60"}>Delete File</MenuItem>
+                <MenuItem value={"50"}>Delete Chip</MenuItem>
+                <MenuItem value={"40"}>Delete Project</MenuItem>
+
+              </Select>
+            {/* </FormControl> */}
+            <br />
+            <br />
+            
 
             Project: 
-            <input type="text" onChange={this.projectNameHandler}/>
+            <Input type="text" onChange={this.projectNameHandler}/>
+            <br />
             
             Chip: 
-            <input type="text" onChange={this.chipNameHandler}/>
+            <Input type="text" onChange={this.chipNameHandler}/>
+            <br />
             
-            {/* <ProjectField/>  */}
-            {/* <ChipField/>  */}
-            </Box>
+            File: 
+            <Input type="text" onChange={this.fileNameHandler}/>
+            <br />
+            <br />
 
-          </header>
-        </div>
+            <Input
+              color="white"
+              // accept=".bin"
+              type="file"
+              onChange={this.fileSelectedHandler}
+              id="icon-button-file"
+              // style={{ display: 'none', }}
+            />
+
+          </Box>
+        </header>
+
+      </div>
 
     );
   }
