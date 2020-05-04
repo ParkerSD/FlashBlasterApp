@@ -9,6 +9,11 @@ function callbackConn()
   console.log('Connection Established');
 }
 
+function callbackHeaderTx()
+{
+  console.log('Header Sent');
+}
+
 function callbackTx()
 {
   console.log('Data Transfer Complete');
@@ -19,10 +24,11 @@ async function bleScan()
   puck.connect(callbackConn);
 }
 
-async function bleWrite()
+async function bleWrite() //test write
 { 
-  puck.write("12345", callbackTx); //test write
+  puck.write("12345", callbackTx); 
 }
 
-export {bleScan, bleWrite, callbackTx}; 
+
+export {bleScan, bleWrite, callbackTx, callbackHeaderTx}; 
 
