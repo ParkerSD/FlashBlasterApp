@@ -27,9 +27,14 @@ const delProjectCMD = "40";
 const delChipCMD = "50";
 const delfileCMD = "60"; 
 const eraseCMD ="FF"; 
+ 
+
+
 
 class App extends Component {
   
+  
+
   state = {
     selectedFile: null,
     project: null,
@@ -63,11 +68,46 @@ class App extends Component {
     this.state.file = event.target.value;
     console.log("File's Name:", this.state.file);
   }
+  dataCallback = () => {
+
+    var file = this.state.selectedFile;
+    var reader = new FileReader();
+    reader.onload = function () { 
+      puck.write(reader.result, callbackTx); 
+    }
+    reader.readAsBinaryString(file); //now available in the result attribute
+
+  }
+
+  writeData = (cmd) => {
+
+    console.log(this.state.selectedFile); //stat object has other properties ex: this.state.selectedFile.name
   
+    var fileSize = this.state.selectedFile.size; 
+    var fileNameSize = this.state.file.length; 
+    var projectNameSize = this.state.project.length;
+    var chipNameSize = this.state.chip.length;
+
+    var fileSizeDigits = Math.floor(Math.log10(fileSize)) + 1; //decimal digits in file size value
+    var fileLengthDigits = Math.floor(Math.log10(fileNameSize)) + 1;
+    var projectLengthDigits = Math.floor(Math.log10(projectNameSize)) + 1;
+    var chipLengthDigits = Math.floor(Math.log10(chipNameSize)) + 1;
+
+    var startCmd = `${startByte}${cmd}${fileLengthDigits}${fileNameSize}${this.state.file}`;
+    var fileData = `${fileSizeDigits}${fileSize}`;
+    var project = `${projectLengthDigits}${projectNameSize}${this.state.project}`;
+    var chip = `${chipLengthDigits}${chipNameSize}${this.state.chip}`;
+
+    var header = startCmd.concat(chip, project, fileData);
+    puck.write(header, this.dataCallback);
+  }
 
   fileUploadHandler = () => {
      
     if(this.state.cmd == addAllCMD){ 
+      if(this.state.selectedFile !== null && this.state.file !== null){
+        this.writeData(addAllCMD);
+      }
     }
 
     else if(this.state.cmd == addProjectCMD){ 
@@ -102,32 +142,8 @@ class App extends Component {
     }
 
     else if(this.state.cmd == addFileCMD){ 
-      if(this.state.selectedFile !== null){
-
-        console.log(this.state.selectedFile); //stat object has other properties ex: this.state.selectedFile.name
-        var file = this.state.selectedFile;
-        
-        var fileSize = this.state.selectedFile.size; 
-        var fileNameSize = this.state.selectedFile.name.length; 
-        var projectNameSize = this.state.project.length;
-        var chipNameSize = this.state.chip.length;
-
-        var fileSizeDigits = Math.floor(Math.log10(fileSize)) + 1; //decimal digits in file size value
-        var fileLengthDigits = Math.floor(Math.log10(fileNameSize)) + 1;
-        var projectLengthDigits = Math.floor(Math.log10(projectNameSize)) + 1;
-        var chipLengthDigits = Math.floor(Math.log10(chipNameSize)) + 1;
-
-        var fileAdd = `${startByte}${addFileCMD}${fileLengthDigits}${this.state.selectedFile.name.length}${this.state.selectedFile.name}`;
-        var fileData = `${fileSizeDigits}${fileSize}`;
-        var project = `${projectLengthDigits}${this.state.project.length}${this.state.project}`;
-        var chip = `${chipLengthDigits}${this.state.chip.length}${this.state.chip}`;
-      
-        var reader = new FileReader();
-        reader.onload = async function () { //is async await working here?
-          const a = await puck.write(fileAdd.concat(chip, project, fileData), callbackHeaderTx); // concatenate project, chip, and file
-          const b = await puck.write(reader.result, callbackTx)
-        }
-        reader.readAsBinaryString(file); //now available in the result attribute
+      if(this.state.selectedFile !== null && this.state.file !== null){
+        this.writeData(addFileCMD);
       }
     }
   }
@@ -154,9 +170,9 @@ class App extends Component {
                 onChange={this.cmdSelectedHandler}
                 // value={this.state.cmd}
                 >
-                <MenuItem value="">
+                {/* <MenuItem value="">
                   <em>None</em>
-                </MenuItem>
+                </MenuItem> */}
                 <MenuItem value={addFileCMD}>Add File</MenuItem>
                 <MenuItem value={addChipCMD}>Add Chip</MenuItem>
                 <MenuItem value={addProjectCMD}>Add Project</MenuItem>
