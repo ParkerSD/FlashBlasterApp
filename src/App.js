@@ -27,14 +27,13 @@ const delProjectCMD = "40";
 const delChipCMD = "50";
 const delfileCMD = "60"; 
 const eraseCMD ="FF"; 
- 
+const minStrLen = 3; 
+const maxStrLen = 15; 
 
 
 
 class App extends Component {
   
-  
-
   state = {
     selectedFile: null,
     project: null,
@@ -45,6 +44,9 @@ class App extends Component {
 
   cmdSelectedHandler = (event) =>{
     this.state.cmd = event.target.value; 
+    // this.setState({
+    //   cmd: event.target.value
+    // })
     console.log("Command Selected:", this.state.cmd);
   }
 
@@ -56,6 +58,9 @@ class App extends Component {
 
   projectNameHandler = (event) => {
     this.state.project = event.target.value;
+    // this.setState({
+    //   project: event.target.value
+    // })
     console.log("Project's Name:", this.state.project);
   }
 
@@ -103,47 +108,89 @@ class App extends Component {
   }
 
   fileUploadHandler = () => {
-     
+
     if(this.state.cmd == addAllCMD){ 
       if(this.state.selectedFile !== null && this.state.file !== null){
-        this.writeData(addAllCMD);
+        if(this.state.project.length < minStrLen || this.state.chip.length < minStrLen || this.state.file.length < minStrLen
+          || this.state.project.length > maxStrLen || this.state.chip.length > maxStrLen || this.state.file.length > maxStrLen) {
+          console.warn("names must be 2 < length < 16");
+        }
+        else
+        {
+          this.writeData(addAllCMD);
+        }
       }
     }
 
     else if(this.state.cmd == addProjectCMD){ 
-      var projectNameSize = this.state.project.length;
-      var projectLengthDigits = Math.floor(Math.log10(projectNameSize)) + 1;
-      var project = `${startByte}${addProjectCMD}${projectLengthDigits}${this.state.project.length}${this.state.project}`;
-      puck.write(project);
+      if(this.state.project.length < minStrLen || this.state.project.length > maxStrLen) {
+        console.warn("project name must be 2 < length < 16");
+      }
+      else{
+        var projectNameSize = this.state.project.length;
+        var projectLengthDigits = Math.floor(Math.log10(projectNameSize)) + 1;
+        var project = `${startByte}${addProjectCMD}${projectLengthDigits}${this.state.project.length}${this.state.project}`;
+        puck.write(project);
+
+      }
     }
 
     else if(this.state.cmd == addChipCMD){ 
-      var projectNameSize = this.state.project.length;
-      var chipNameSize = this.state.chip.length;
-      var projectLengthDigits = Math.floor(Math.log10(projectNameSize)) + 1;
-      var chipLengthDigits = Math.floor(Math.log10(chipNameSize)) + 1;
-      var project = `${projectLengthDigits}${this.state.project.length}${this.state.project}`;
-      var chip = `${startByte}${addChipCMD}${chipLengthDigits}${this.state.chip.length}${this.state.chip}`;
-      puck.write(chip.concat(project));
+      if(this.state.chip.length < minStrLen || this.state.chip.length > maxStrLen) {
+        console.warn("chip name must be 2 < length < 16");
+      }
+      else{
+        var projectNameSize = this.state.project.length;
+        var chipNameSize = this.state.chip.length;
+        var projectLengthDigits = Math.floor(Math.log10(projectNameSize)) + 1;
+        var chipLengthDigits = Math.floor(Math.log10(chipNameSize)) + 1;
+        var project = `${projectLengthDigits}${this.state.project.length}${this.state.project}`;
+        var chip = `${startByte}${addChipCMD}${chipLengthDigits}${this.state.chip.length}${this.state.chip}`;
+        puck.write(chip.concat(project));
+
+      }
     }
 
     else if(this.state.cmd == delProjectCMD){ 
+      if(this.state.project.length < minStrLen || this.state.project.length > maxStrLen) {
+        console.warn("project name must be 2 < length < 16");
+      }
+      else{
+            //TODO
+      }
     }
 
     else if(this.state.cmd == delChipCMD){ 
+      if(this.state.chip.length < minStrLen || this.state.chip.length > maxStrLen) {
+        console.warn("chip name must be 2 < length < 16");
+      }
+      else{
+            //TODO
+      }
     }
 
     else if(this.state.cmd == delfileCMD){  
+      if(this.state.file.length < minStrLen || this.state.file.length > maxStrLen) {
+        console.warn("file name must be 2 < length < 16");
+      }
+      else{
+           //TODO
+      }
     }
 
     else if(this.state.cmd == eraseCMD){  
-      var eraseDevice = `${startByte}${eraseCMD}`;
-      puck.write(eraseDevice); 
+        var eraseDevice = `${startByte}${eraseCMD}`;
+        puck.write(eraseDevice); 
     }
 
     else if(this.state.cmd == addFileCMD){ 
       if(this.state.selectedFile !== null && this.state.file !== null){
-        this.writeData(addFileCMD);
+        if(this.state.file.length < minStrLen || this.state.file.length > maxStrLen) {
+          console.warn("file name must be 2 < length < 16");
+        }
+        else{
+          this.writeData(addFileCMD); 
+        }
       }
     }
   }
