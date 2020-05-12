@@ -21,11 +21,11 @@ import FormControl from '@material-ui/core/FormControl';
 const startByte = "CC"; 
 const addProjectCMD = "10";
 const addChipCMD = "20";
-const addFileCMD = "30";
+const addProgramCMD = "30";
 const addAllCMD = "00";
 const delProjectCMD = "40";
 const delChipCMD = "50";
-const delfileCMD = "60"; 
+const delProgramCMD = "60"; 
 const eraseCMD ="FF"; 
 const minStrLen = 3; 
 const maxStrLen = 15; 
@@ -38,7 +38,7 @@ class App extends Component {
     selectedFile: null,
     project: null,
     chip: null,
-    file: null,
+    program: null,
     cmd: null
   }
 
@@ -69,9 +69,9 @@ class App extends Component {
     console.log("Chip's Name:", this.state.chip);
   }
 
-  fileNameHandler = (event) => {
-    this.state.file = event.target.value;
-    console.log("File's Name:", this.state.file);
+  programNameHandler = (event) => {
+    this.state.program = event.target.value;
+    console.log("Program's Name:", this.state.program);
   }
   dataCallback = () => {
 
@@ -89,16 +89,16 @@ class App extends Component {
     console.log(this.state.selectedFile); //stat object has other properties ex: this.state.selectedFile.name
   
     var fileSize = this.state.selectedFile.size; 
-    var fileNameSize = this.state.file.length; 
+    var programNameSize = this.state.program.length; 
     var projectNameSize = this.state.project.length;
     var chipNameSize = this.state.chip.length;
 
     var fileSizeDigits = Math.floor(Math.log10(fileSize)) + 1; //decimal digits in file size value
-    var fileLengthDigits = Math.floor(Math.log10(fileNameSize)) + 1;
+    var programLengthDigits = Math.floor(Math.log10(programNameSize)) + 1;
     var projectLengthDigits = Math.floor(Math.log10(projectNameSize)) + 1;
     var chipLengthDigits = Math.floor(Math.log10(chipNameSize)) + 1;
 
-    var startCmd = `${startByte}${cmd}${fileLengthDigits}${fileNameSize}${this.state.file}`;
+    var startCmd = `${startByte}${cmd}${programLengthDigits}${programNameSize}${this.state.program}`;
     var fileData = `${fileSizeDigits}${fileSize}`;
     var project = `${projectLengthDigits}${projectNameSize}${this.state.project}`;
     var chip = `${chipLengthDigits}${chipNameSize}${this.state.chip}`;
@@ -110,9 +110,9 @@ class App extends Component {
   fileUploadHandler = () => {
 
     if(this.state.cmd == addAllCMD){ 
-      if(this.state.selectedFile !== null && this.state.file !== null){
-        if(this.state.project.length < minStrLen || this.state.chip.length < minStrLen || this.state.file.length < minStrLen
-          || this.state.project.length > maxStrLen || this.state.chip.length > maxStrLen || this.state.file.length > maxStrLen) {
+      if(this.state.selectedFile !== null && this.state.program !== null){
+        if(this.state.project.length < minStrLen || this.state.chip.length < minStrLen || this.state.program.length < minStrLen
+          || this.state.project.length > maxStrLen || this.state.chip.length > maxStrLen || this.state.program.length > maxStrLen) {
           console.warn("names must be 2 < length < 16");
         }
         else
@@ -169,8 +169,8 @@ class App extends Component {
       }
     }
 
-    else if(this.state.cmd == delfileCMD){  
-      if(this.state.file.length < minStrLen || this.state.file.length > maxStrLen) {
+    else if(this.state.cmd == delProgramCMD){  
+      if(this.state.program.length < minStrLen || this.state.program.length > maxStrLen) {
         console.warn("file name must be 2 < length < 16");
       }
       else{
@@ -183,13 +183,13 @@ class App extends Component {
         puck.write(eraseDevice); 
     }
 
-    else if(this.state.cmd == addFileCMD){ 
-      if(this.state.selectedFile !== null && this.state.file !== null){
-        if(this.state.file.length < minStrLen || this.state.file.length > maxStrLen) {
-          console.warn("file name must be 2 < length < 16");
+    else if(this.state.cmd == addProgramCMD){ 
+      if(this.state.selectedFile !== null && this.state.program !== null){
+        if(this.state.program.length < minStrLen || this.state.program.length > maxStrLen) {
+          console.warn("program name must be 2 < length < 16");
         }
         else{
-          this.writeData(addFileCMD); 
+          this.writeData(addProgramCMD); 
         }
       }
     }
@@ -210,7 +210,7 @@ class App extends Component {
             </Button> */}
           </p>
         
-          <Box border={5} color="black" bgcolor="white"  p={10}>
+          <Box border={2} color="black" bgcolor="white"  p={10}>
           {/* <FormControl variant="outlined"> */}
             <InputLabel>Select Command</InputLabel>
               <Select
@@ -220,11 +220,11 @@ class App extends Component {
                 {/* <MenuItem value="">
                   <em>None</em>
                 </MenuItem> */}
-                <MenuItem value={addFileCMD}>Add File</MenuItem>
+                <MenuItem value={addProgramCMD}>Add Program</MenuItem>
                 <MenuItem value={addChipCMD}>Add Chip</MenuItem>
                 <MenuItem value={addProjectCMD}>Add Project</MenuItem>
                 <MenuItem value={addAllCMD}>Add All</MenuItem>
-                <MenuItem value={delfileCMD}>Delete File</MenuItem>
+                <MenuItem value={delProgramCMD}>Delete Program</MenuItem>
                 <MenuItem value={delChipCMD}>Delete Chip</MenuItem>
                 <MenuItem value={delProjectCMD}>Delete Project</MenuItem>
                 <MenuItem value={eraseCMD}>Erase Device</MenuItem>
@@ -233,16 +233,20 @@ class App extends Component {
             <br />
             <br />
             
-            Project: 
+             
             <Input type="text" onChange={this.projectNameHandler}/>
             <br />
-          
-            Chip: 
+            Project
+            <br />
+        
             <Input type="text" onChange={this.chipNameHandler}/>
             <br />
+            Chip
+            <br />
             
-            File: 
-            <Input type="text" onChange={this.fileNameHandler}/>
+            <Input type="text" onChange={this.programNameHandler}/>
+            <br />
+            Program
             <br />
             <br />
 
