@@ -30,6 +30,12 @@ const eraseCMD ="FF";
 const minStrLen = 3; 
 const maxStrLen = 15; 
 
+class HexPrefix extends React.Component {
+  render() {
+    return "0x";
+  }
+}
+
 
 
 class App extends Component {
@@ -37,16 +43,15 @@ class App extends Component {
   state = {
     selectedFile: null,
     project: null,
-    chip: null,
+    chip: 'undefined',
     program: null,
+    address: null,
     cmd: null
   }
 
   cmdSelectedHandler = (event) =>{
-    this.state.cmd = event.target.value; 
-    // this.setState({
-    //   cmd: event.target.value
-    // })
+    this.state.cmd = event.target.value;
+    //this.setState({cmd: event.target.value});
     console.log("Command Selected:", this.state.cmd);
   }
 
@@ -58,21 +63,27 @@ class App extends Component {
 
   projectNameHandler = (event) => {
     this.state.project = event.target.value;
-    // this.setState({
-    //   project: event.target.value
-    // })
+    // this.setState({project: event.target.value})
     console.log("Project's Name:", this.state.project);
-  }
-
-  chipNameHandler = (event) => {
-    this.state.chip = event.target.value;
-    console.log("Chip's Name:", this.state.chip);
   }
 
   programNameHandler = (event) => {
     this.state.program = event.target.value;
     console.log("Program's Name:", this.state.program);
   }
+
+  addressHandler = (event) => {
+    this.state.address = event.target.value;
+    console.log("Address Value:", this.state.address);
+  }
+
+  chipTypeHandler  = (event) => {
+    this.setState({chip: event.target.value}, function () {
+      console.log(this.state.chip);
+    });
+  }
+
+
   dataCallback = () => {
 
     var file = this.state.selectedFile;
@@ -102,52 +113,59 @@ class App extends Component {
     var fileData = `${fileSizeDigits}${fileSize}`;
     var project = `${projectLengthDigits}${projectNameSize}${this.state.project}`;
     var chip = `${chipLengthDigits}${chipNameSize}${this.state.chip}`;
+    var address = this.state.address;
 
-    var header = startCmd.concat(chip, project, fileData);
+    var header = startCmd.concat(chip, project, fileData, address);
     puck.write(header, this.dataCallback);
   }
 
   fileUploadHandler = () => {
 
     if(this.state.cmd == addAllCMD){ 
-      if(this.state.selectedFile !== null && this.state.program !== null){
+      if(this.state.selectedFile !== null && this.state.program !== null && this.state.address !== null && this.state.project !== null && this.state.chip !== null){
         if(this.state.project.length < minStrLen || this.state.chip.length < minStrLen || this.state.program.length < minStrLen
-          || this.state.project.length > maxStrLen || this.state.chip.length > maxStrLen || this.state.program.length > maxStrLen) {
-          console.warn("names must be 2 < length < 16");
-        }
-        else
-        {
+          || this.state.project.length > maxStrLen || this.state.chip.length > maxStrLen || this.state.program.length > maxStrLen){
+            console.warn("names must be 2 < length < 16");
+          }
+        if(this.state.address.length > 8 || this.state.address.length < 8){
+            console.warn("start address must be 4 bytes");
+          }
+        else{
           this.writeData(addAllCMD);
         }
       }
     }
 
     else if(this.state.cmd == addProjectCMD){ 
-      if(this.state.project.length < minStrLen || this.state.project.length > maxStrLen) {
-        console.warn("project name must be 2 < length < 16");
-      }
-      else{
-        var projectNameSize = this.state.project.length;
-        var projectLengthDigits = Math.floor(Math.log10(projectNameSize)) + 1;
-        var project = `${startByte}${addProjectCMD}${projectLengthDigits}${this.state.project.length}${this.state.project}`;
-        puck.write(project);
+      if(this.state.project !== null){
+        if(this.state.project.length < minStrLen || this.state.project.length > maxStrLen) {
+          console.warn("project name must be 2 < length < 16");
+        }
+        else{
+          var projectNameSize = this.state.project.length;
+          var projectLengthDigits = Math.floor(Math.log10(projectNameSize)) + 1;
+          var project = `${startByte}${addProjectCMD}${projectLengthDigits}${this.state.project.length}${this.state.project}`;
+          puck.write(project);
 
+        }
       }
     }
 
     else if(this.state.cmd == addChipCMD){ 
-      if(this.state.chip.length < minStrLen || this.state.chip.length > maxStrLen) {
-        console.warn("chip name must be 2 < length < 16");
-      }
-      else{
-        var projectNameSize = this.state.project.length;
-        var chipNameSize = this.state.chip.length;
-        var projectLengthDigits = Math.floor(Math.log10(projectNameSize)) + 1;
-        var chipLengthDigits = Math.floor(Math.log10(chipNameSize)) + 1;
-        var project = `${projectLengthDigits}${this.state.project.length}${this.state.project}`;
-        var chip = `${startByte}${addChipCMD}${chipLengthDigits}${this.state.chip.length}${this.state.chip}`;
-        puck.write(chip.concat(project));
+      if(this.state.project !== null && this.state.chip !== null){
+        if(this.state.chip.length < minStrLen || this.state.chip.length > maxStrLen) {
+          console.warn("chip name must be 2 < length < 16");
+        }
+        else{
+          var projectNameSize = this.state.project.length;
+          var chipNameSize = this.state.chip.length;
+          var projectLengthDigits = Math.floor(Math.log10(projectNameSize)) + 1;
+          var chipLengthDigits = Math.floor(Math.log10(chipNameSize)) + 1;
+          var project = `${projectLengthDigits}${this.state.project.length}${this.state.project}`;
+          var chip = `${startByte}${addChipCMD}${chipLengthDigits}${this.state.chip.length}${this.state.chip}`;
+          puck.write(chip.concat(project));
 
+        }
       }
     }
 
@@ -184,9 +202,12 @@ class App extends Component {
     }
 
     else if(this.state.cmd == addProgramCMD){ 
-      if(this.state.selectedFile !== null && this.state.program !== null){
-        if(this.state.program.length < minStrLen || this.state.program.length > maxStrLen) {
+      if(this.state.selectedFile !== null && this.state.program !== null && this.state.address !== null && this.state.project !== null && this.state.chip !== null){
+        if(this.state.program.length < minStrLen || this.state.program.length > maxStrLen){
           console.warn("program name must be 2 < length < 16");
+        }
+        if(this.state.address.length > 8 || this.state.address.length < 8){
+          console.warn("start address must be 4 bytes");
         }
         else{
           this.writeData(addProgramCMD); 
@@ -204,29 +225,25 @@ class App extends Component {
             <Button variant="outlined" color="secondary" onClick={this.fileUploadHandler}> 
               Update Device 
             </Button>
- 
-            {/* <Button variant="contained" color="primary" onClick={bleWrite}>
-              Write Data
-            </Button> */}
+
+
           </p>
         
-          <Box border={2} color="black" bgcolor="white"  p={10}>
+          <Box border={2} color="black" bgcolor="white"  p={7}>
           {/* <FormControl variant="outlined"> */}
-            <InputLabel>Select Command</InputLabel>
-              <Select
-                onChange={this.cmdSelectedHandler}
-                // value={this.state.cmd}
-                >
+            <InputLabel>Select Action</InputLabel>
+              <Select onChange={this.cmdSelectedHandler}>
                 {/* <MenuItem value="">
                   <em>None</em>
                 </MenuItem> */}
-                <MenuItem value={addProgramCMD}>Add Program</MenuItem>
-                <MenuItem value={addChipCMD}>Add Chip</MenuItem>
+                
                 <MenuItem value={addProjectCMD}>Add Project</MenuItem>
+                <MenuItem value={addChipCMD}>Add Chip</MenuItem>
+                <MenuItem value={addProgramCMD}>Add Program</MenuItem>
                 <MenuItem value={addAllCMD}>Add All</MenuItem>
-                <MenuItem value={delProgramCMD}>Delete Program</MenuItem>
-                <MenuItem value={delChipCMD}>Delete Chip</MenuItem>
                 <MenuItem value={delProjectCMD}>Delete Project</MenuItem>
+                <MenuItem value={delChipCMD}>Delete Chip</MenuItem>
+                <MenuItem value={delProgramCMD}>Delete Program</MenuItem>
                 <MenuItem value={eraseCMD}>Erase Device</MenuItem>
               </Select>
             {/* </FormControl> */}
@@ -238,25 +255,44 @@ class App extends Component {
             <br />
             Project
             <br />
-        
-            <Input type="text" onChange={this.chipNameHandler}/>
+            <br />
+            
+      
+            <Select value = {this.state.chip} onChange={this.chipTypeHandler}>
+              <MenuItem value={"NRF52840"}>NRF52840</MenuItem>
+              <MenuItem value={"NRF52832"}>NRF52832</MenuItem>
+              <MenuItem value={"ATSAMD51"}>ATSAMD51</MenuItem>
+              <MenuItem value={"ATSAMD21"}>ATSAMD21</MenuItem>
+              <MenuItem value={"STM32F0"}>STM32F0</MenuItem>
+              <MenuItem value={"STM32F1"}>STM32F1</MenuItem>
+            </Select>
             <br />
             Chip
             <br />
             
+      
             <Input type="text" onChange={this.programNameHandler}/>
             <br />
-            Program
+            Program Name
+            <br />
+          
+
+            <HexPrefix/>
+            <Input type="text" onChange={this.addressHandler}/>
+            <br />
+            Start Address
+            <br />
             <br />
             <br />
 
             <Input
-              color="white"
-              // accept=".bin"
+              //accept=".bin"
               type="file"
               onChange={this.fileSelectedHandler}
               id="icon-button-file"
             />
+
+
 
           </Box>
         </header>
