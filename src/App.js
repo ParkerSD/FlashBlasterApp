@@ -17,7 +17,6 @@ import MenuItem from '@material-ui/core/MenuItem';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 
-
 const startByte = "CC"; 
 const addProjectCMD = "10";
 const addChipCMD = "20";
@@ -29,6 +28,7 @@ const delProgramCMD = "60";
 const eraseCMD ="FF"; 
 const minStrLen = 3; 
 const maxStrLen = 15; 
+const addressSize = 8;
 
 class HexPrefix extends React.Component {
   render() {
@@ -36,22 +36,147 @@ class HexPrefix extends React.Component {
   }
 }
 
+class Project extends React.Component {
+  render() {
+    if(this.props.command == addProjectCMD || this.props.command == addChipCMD || this.props.command == addProgramCMD || this.props.command == addAllCMD){
+      return(
+        <p>
+          <Input type="text" onChange={this.props.action}/>
+          <br/>
+          Project
+        </p>
+      )
+    }
+    else{
+      return( 
+        <span/>
+      )
+    }
+  } 
+}
+
+
+
+class Chip extends React.Component {
+  render() {
+    if(this.props.command == addChipCMD || this.props.command == addProgramCMD || this.props.command == addAllCMD){
+      return(
+        <p>
+          <Select onChange={this.props.action}>
+          <MenuItem value={"NRF52840"}>NRF52840</MenuItem>
+          <MenuItem value={"NRF52832"}>NRF52832</MenuItem>
+          <MenuItem value={"ATSAMD51"}>ATSAMD51</MenuItem>
+          <MenuItem value={"ATSAMD21"}>ATSAMD21</MenuItem>
+          <MenuItem value={"STM32F0"}>STM32F0</MenuItem>
+          <MenuItem value={"STM32F1"}>STM32F1</MenuItem>
+          </Select>
+          <br/>
+          Chip
+        </p>
+      )
+    }
+    else{
+      return(
+        <span/>
+      )
+    }
+  }
+}
+
+class Program extends React.Component {
+  render() {
+    if(this.props.command == addProgramCMD || this.props.command == addAllCMD){
+      return(
+        <p>
+          <Input type="text" onChange={this.props.action}/>
+          <br />
+          Program Name
+        </p>
+      )
+    }
+    else{
+      return(
+        <span/>
+      )
+    }
+  }
+}
+
+class Address extends React.Component {
+  render() {
+    if((this.props.command == addProgramCMD || this.props.command == addAllCMD) && this.props.length >= minStrLen){
+      return(
+        <p>
+          <HexPrefix/>
+          <Input type="text" onChange={this.props.action}/>
+          <br />
+          Start Address
+        </p>
+      )
+    }
+    else{
+      return(
+        <span/>
+      )
+    }
+  }
+}
+
+class FileSelect extends React.Component {
+  render() {
+    if((this.props.command == addProgramCMD || this.props.command == addAllCMD) && this.props.length == addressSize){
+      return(
+        <p>
+          <Input
+          //accept=".bin"
+          type="file"
+          onChange={this.props.action}
+          id="icon-button-file"
+          />
+        </p>
+      )
+    }
+    else{
+      return(
+        <span/>
+      )    
+    }
+  }
+}
 
 
 class App extends Component {
+  constructor(props) {
+    super(props)
+
+    // Bind the this context to the handler function
+    this.projectNameHandler = this.projectNameHandler.bind(this);
+    this.chipTypeHandler = this.chipTypeHandler.bind(this);
+    this.programNameHandler = this.programNameHandler.bind(this);
+    this.addressHandler = this.addressHandler.bind(this);
+    this.fileSelectedHandler = this.fileSelectedHandler.bind(this);
+
+    this.state = {
+      project: null,
+      chip: null,
+      program: 0,
+      selectedFile: null,
+      address: 0,
+      cmd: null
+    };
+}
   
-  state = {
-    selectedFile: null,
-    project: null,
-    chip: 'undefined',
-    program: null,
-    address: null,
-    cmd: null
-  }
 
   cmdSelectedHandler = (event) =>{
+    this.state.project = null; // reset all state
+    this.state.chip = null;
+    this.state.program = 0;
+    this.state.selectedFile = null;
+    this.state.address = 0;
+    this.state.cmd = null;
     this.state.cmd = event.target.value;
     //this.setState({cmd: event.target.value});
+    this.forceUpdate();
     console.log("Command Selected:", this.state.cmd);
   }
 
@@ -69,11 +194,13 @@ class App extends Component {
 
   programNameHandler = (event) => {
     this.state.program = event.target.value;
+    this.forceUpdate();
     console.log("Program's Name:", this.state.program);
   }
 
   addressHandler = (event) => {
     this.state.address = event.target.value;
+    this.forceUpdate();
     console.log("Address Value:", this.state.address);
   }
 
@@ -83,20 +210,16 @@ class App extends Component {
     });
   }
 
-
   dataCallback = () => {
-
     var file = this.state.selectedFile;
     var reader = new FileReader();
     reader.onload = function () { 
       puck.write(reader.result, callbackTx); 
     }
     reader.readAsBinaryString(file); //now available in the result attribute
-
   }
 
   writeData = (cmd) => {
-
     console.log(this.state.selectedFile); //stat object has other properties ex: this.state.selectedFile.name
   
     var fileSize = this.state.selectedFile.size; 
@@ -120,14 +243,13 @@ class App extends Component {
   }
 
   fileUploadHandler = () => {
-
     if(this.state.cmd == addAllCMD){ 
       if(this.state.selectedFile !== null && this.state.program !== null && this.state.address !== null && this.state.project !== null && this.state.chip !== null){
         if(this.state.project.length < minStrLen || this.state.chip.length < minStrLen || this.state.program.length < minStrLen
           || this.state.project.length > maxStrLen || this.state.chip.length > maxStrLen || this.state.program.length > maxStrLen){
             console.warn("names must be 2 < length < 16");
           }
-        if(this.state.address.length > 8 || this.state.address.length < 8){
+        if(this.state.address.length > addressSize || this.state.address.length < addressSize){
             console.warn("start address must be 4 bytes");
           }
         else{
@@ -206,7 +328,7 @@ class App extends Component {
         if(this.state.program.length < minStrLen || this.state.program.length > maxStrLen){
           console.warn("program name must be 2 < length < 16");
         }
-        if(this.state.address.length > 8 || this.state.address.length < 8){
+        if(this.state.address.length > addressSize || this.state.address.length < addressSize){
           console.warn("start address must be 4 bytes");
         }
         else{
@@ -225,74 +347,31 @@ class App extends Component {
             <Button variant="outlined" color="secondary" onClick={this.fileUploadHandler}> 
               Update Device 
             </Button>
-
-
           </p>
-        
-          <Box border={2} color="black" bgcolor="white"  p={7}>
-          {/* <FormControl variant="outlined"> */}
+
+          <Box border={2} color="black" bgcolor="white" p={7}>
             <InputLabel>Select Action</InputLabel>
-              <Select onChange={this.cmdSelectedHandler}>
-                {/* <MenuItem value="">
-                  <em>None</em>
-                </MenuItem> */}
-                
+              <Select onChange={this.cmdSelectedHandler}>                
                 <MenuItem value={addProjectCMD}>Add Project</MenuItem>
                 <MenuItem value={addChipCMD}>Add Chip</MenuItem>
                 <MenuItem value={addProgramCMD}>Add Program</MenuItem>
                 <MenuItem value={addAllCMD}>Add All</MenuItem>
-                <MenuItem value={delProjectCMD}>Delete Project</MenuItem>
-                <MenuItem value={delChipCMD}>Delete Chip</MenuItem>
-                <MenuItem value={delProgramCMD}>Delete Program</MenuItem>
+                {/*<MenuItem value={delProjectCMD}>Delete Project</MenuItem>*/}
+                {/*<MenuItem value={delChipCMD}>Delete Chip</MenuItem>*/}
+                {/*<MenuItem value={delProgramCMD}>Delete Program</MenuItem>*/}
                 <MenuItem value={eraseCMD}>Erase Device</MenuItem>
               </Select>
-            {/* </FormControl> */}
             <br />
-            <br />
+
+            <Project command={this.state.cmd} action={this.projectNameHandler}/> 
             
-             
-            <Input type="text" onChange={this.projectNameHandler}/>
-            <br />
-            Project
-            <br />
-            <br />
-            
-      
-            <Select value = {this.state.chip} onChange={this.chipTypeHandler}>
-              <MenuItem value={"NRF52840"}>NRF52840</MenuItem>
-              <MenuItem value={"NRF52832"}>NRF52832</MenuItem>
-              <MenuItem value={"ATSAMD51"}>ATSAMD51</MenuItem>
-              <MenuItem value={"ATSAMD21"}>ATSAMD21</MenuItem>
-              <MenuItem value={"STM32F0"}>STM32F0</MenuItem>
-              <MenuItem value={"STM32F1"}>STM32F1</MenuItem>
-            </Select>
-            <br />
-            Chip
-            <br />
-            
-      
-            <Input type="text" onChange={this.programNameHandler}/>
-            <br />
-            Program Name
-            <br />
-          
+            <Chip command={this.state.cmd} action={this.chipTypeHandler}/>
 
-            <HexPrefix/>
-            <Input type="text" onChange={this.addressHandler}/>
-            <br />
-            Start Address
-            <br />
-            <br />
-            <br />
+            <Program command={this.state.cmd} action={this.programNameHandler}/>
 
-            <Input
-              //accept=".bin"
-              type="file"
-              onChange={this.fileSelectedHandler}
-              id="icon-button-file"
-            />
+            <Address command={this.state.cmd} action={this.addressHandler} length={this.state.program.length}/>
 
-
+            <FileSelect command={this.state.cmd} action={this.fileSelectedHandler} length={this.state.address.length} />
 
           </Box>
         </header>
@@ -300,5 +379,4 @@ class App extends Component {
     );
   }
 }
-
 export default App;
