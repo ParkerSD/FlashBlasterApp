@@ -16,6 +16,21 @@ import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
+import TextField from '@material-ui/core/TextField';
+import InputAdornment from '@material-ui/core/InputAdornment';
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  textField: {
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    width: '25ch',
+  },
+}));
+
 
 const startByte = "CC"; 
 const addProjectCMD = "10";
@@ -38,13 +53,11 @@ class HexPrefix extends React.Component {
 
 class Project extends React.Component {
   render() {
-    if(this.props.command == addProjectCMD || this.props.command == addChipCMD || this.props.command == addProgramCMD || this.props.command == addAllCMD){
+    if(this.props.command === addProjectCMD || this.props.command === addChipCMD || this.props.command === addProgramCMD || this.props.command === addAllCMD){
       return(
-        <p>
-          <Input type="text" onChange={this.props.action}/>
-          <br/>
-          Project
-        </p>
+        <div>
+          <TextField label="Project" onChange={this.props.action}/>
+        </div>
       )
     }
     else{
@@ -59,9 +72,11 @@ class Project extends React.Component {
 
 class Chip extends React.Component {
   render() {
-    if(this.props.command == addChipCMD || this.props.command == addProgramCMD || this.props.command == addAllCMD){
+    if(this.props.command === addChipCMD || this.props.command === addProgramCMD || this.props.command === addAllCMD){
       return(
-        <p>
+        <div>
+          <br />
+          <InputLabel>Chip</InputLabel>
           <Select onChange={this.props.action}>
           <MenuItem value={"NRF52840"}>NRF52840</MenuItem>
           <MenuItem value={"NRF52832"}>NRF52832</MenuItem>
@@ -70,9 +85,7 @@ class Chip extends React.Component {
           <MenuItem value={"STM32F0"}>STM32F0</MenuItem>
           <MenuItem value={"STM32F1"}>STM32F1</MenuItem>
           </Select>
-          <br/>
-          Chip
-        </p>
+        </div>
       )
     }
     else{
@@ -85,13 +98,12 @@ class Chip extends React.Component {
 
 class Program extends React.Component {
   render() {
-    if(this.props.command == addProgramCMD || this.props.command == addAllCMD){
+    if(this.props.command === addProgramCMD || this.props.command === addAllCMD){
       return(
-        <p>
-          <Input type="text" onChange={this.props.action}/>
+        <div>
+          <TextField label="Program Name" onChange={this.props.action}/>
           <br />
-          Program Name
-        </p>
+        </div>
       )
     }
     else{
@@ -104,14 +116,18 @@ class Program extends React.Component {
 
 class Address extends React.Component {
   render() {
-    if((this.props.command == addProgramCMD || this.props.command == addAllCMD) && this.props.length >= minStrLen){
+    if((this.props.command === addProgramCMD || this.props.command === addAllCMD) && this.props.length >= minStrLen){
       return(
-        <p>
-          <HexPrefix/>
-          <Input type="text" onChange={this.props.action}/>
+        <div>
+          <TextField
+            label="Start Address"
+            onChange={this.props.action}
+            InputProps={{
+              startAdornment: <InputAdornment position="start">0x</InputAdornment>
+            }}
+          />
           <br />
-          Start Address
-        </p>
+        </div>
       )
     }
     else{
@@ -124,7 +140,7 @@ class Address extends React.Component {
 
 class FileSelect extends React.Component {
   render() {
-    if((this.props.command == addProgramCMD || this.props.command == addAllCMD) && this.props.length == addressSize){
+    if((this.props.command === addProgramCMD || this.props.command === addAllCMD) && this.props.length === addressSize){
       return(
         <p>
           <Input
@@ -162,22 +178,17 @@ class App extends Component {
       program: 0,
       selectedFile: null,
       address: 0,
-      cmd: null
+      cmd: ''
     };
 }
   
 
   cmdSelectedHandler = (event) =>{
-    this.state.project = null; // reset all state
-    this.state.chip = null;
-    this.state.program = 0;
-    this.state.selectedFile = null;
-    this.state.address = 0;
-    this.state.cmd = null;
-    this.state.cmd = event.target.value;
-    //this.setState({cmd: event.target.value});
+    this.setState({cmd: event.target.value}, function () {
+      console.log(this.state.cmd);
+    });
     this.forceUpdate();
-    console.log("Command Selected:", this.state.cmd);
+    // console.log("Command Selected:", this.state.cmd);
   }
 
   fileSelectedHandler = (event) =>{
@@ -243,7 +254,7 @@ class App extends Component {
   }
 
   fileUploadHandler = () => {
-    if(this.state.cmd == addAllCMD){ 
+    if(this.state.cmd === addAllCMD){ 
       if(this.state.selectedFile !== null && this.state.program !== null && this.state.address !== null && this.state.project !== null && this.state.chip !== null){
         if(this.state.project.length < minStrLen || this.state.chip.length < minStrLen || this.state.program.length < minStrLen
           || this.state.project.length > maxStrLen || this.state.chip.length > maxStrLen || this.state.program.length > maxStrLen){
@@ -258,7 +269,7 @@ class App extends Component {
       }
     }
 
-    else if(this.state.cmd == addProjectCMD){ 
+    else if(this.state.cmd === addProjectCMD){ 
       if(this.state.project !== null){
         if(this.state.project.length < minStrLen || this.state.project.length > maxStrLen) {
           console.warn("project name must be 2 < length < 16");
@@ -273,7 +284,7 @@ class App extends Component {
       }
     }
 
-    else if(this.state.cmd == addChipCMD){ 
+    else if(this.state.cmd === addChipCMD){ 
       if(this.state.project !== null && this.state.chip !== null){
         if(this.state.chip.length < minStrLen || this.state.chip.length > maxStrLen) {
           console.warn("chip name must be 2 < length < 16");
@@ -291,7 +302,7 @@ class App extends Component {
       }
     }
 
-    else if(this.state.cmd == delProjectCMD){ 
+    else if(this.state.cmd === delProjectCMD){ 
       if(this.state.project.length < minStrLen || this.state.project.length > maxStrLen) {
         console.warn("project name must be 2 < length < 16");
       }
@@ -300,7 +311,7 @@ class App extends Component {
       }
     }
 
-    else if(this.state.cmd == delChipCMD){ 
+    else if(this.state.cmd === delChipCMD){ 
       if(this.state.chip.length < minStrLen || this.state.chip.length > maxStrLen) {
         console.warn("chip name must be 2 < length < 16");
       }
@@ -309,7 +320,7 @@ class App extends Component {
       }
     }
 
-    else if(this.state.cmd == delProgramCMD){  
+    else if(this.state.cmd === delProgramCMD){  
       if(this.state.program.length < minStrLen || this.state.program.length > maxStrLen) {
         console.warn("file name must be 2 < length < 16");
       }
@@ -318,12 +329,12 @@ class App extends Component {
       }
     }
 
-    else if(this.state.cmd == eraseCMD){  
+    else if(this.state.cmd === eraseCMD){  
         var eraseDevice = `${startByte}${eraseCMD}`;
         puck.write(eraseDevice); 
     }
 
-    else if(this.state.cmd == addProgramCMD){ 
+    else if(this.state.cmd === addProgramCMD){ 
       if(this.state.selectedFile !== null && this.state.program !== null && this.state.address !== null && this.state.project !== null && this.state.chip !== null){
         if(this.state.program.length < minStrLen || this.state.program.length > maxStrLen){
           console.warn("program name must be 2 < length < 16");
@@ -351,7 +362,7 @@ class App extends Component {
 
           <Box border={2} color="black" bgcolor="white" p={7}>
             <InputLabel>Select Action</InputLabel>
-              <Select onChange={this.cmdSelectedHandler}>                
+              <Select value={this.state.cmd} onChange={this.cmdSelectedHandler}>                
                 <MenuItem value={addProjectCMD}>Add Project</MenuItem>
                 <MenuItem value={addChipCMD}>Add Chip</MenuItem>
                 <MenuItem value={addProgramCMD}>Add Program</MenuItem>
@@ -364,13 +375,9 @@ class App extends Component {
             <br />
 
             <Project command={this.state.cmd} action={this.projectNameHandler}/> 
-            
             <Chip command={this.state.cmd} action={this.chipTypeHandler}/>
-
             <Program command={this.state.cmd} action={this.programNameHandler}/>
-
             <Address command={this.state.cmd} action={this.addressHandler} length={this.state.program.length}/>
-
             <FileSelect command={this.state.cmd} action={this.fileSelectedHandler} length={this.state.address.length} />
 
           </Box>
