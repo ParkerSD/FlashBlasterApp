@@ -118,8 +118,8 @@ Or more advanced usage with control of the connection
     if (!queue.length) return;
     var q = queue.shift();
     log(3,"Executing "+JSON.stringify(q)+" from queue");
-    if (q.type==="eval") puck.eval(q.expr, q.cb);
-    else if (q.type==="write") puck.write(q.data, q.callback, q.callbackNewline);
+    if (q.type=="eval") puck.eval(q.expr, q.cb);
+    else if (q.type=="write") puck.write(q.data, q.callback, q.callbackNewline);
     else log(1,"Unknown queue item "+JSON.stringify(q));
   }
 
@@ -237,10 +237,10 @@ Or more advanced usage with control of the connection
           for (var i=0;i<data.length;i++) {
             var ch = data.charCodeAt(i);
             var remove = true;
-            if (ch===19) {// XOFF
+            if (ch==19) {// XOFF
               console.log(2,"XOFF received => pause upload");
               flowControlXOFF = true;
-            } else if (ch===17) {// XON
+            } else if (ch==17) {// XON
               console.log(2,"XON received => resume upload");
               flowControlXOFF = false;
             } else
